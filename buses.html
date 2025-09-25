@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>All Buses - BusTrack+</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- QRCode -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-dark bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="index.html">BusTrack+</a>
+      <span class="navbar-text">All Buses</span>
+    </div>
+  </nav>
+
+  <div class="container mt-3 mb-5">
+
+    <div class="mb-3">
+      <input type="text" class="form-control rounded-pill" placeholder="Search routes, stops or destinations..." id="searchInput">
+    </div>
+
+    <!-- Bus List -->
+    <div class="row mt-3" id="busList"></div>
+  </div>
+
+  <!-- Bottom Navigation Tabs -->
+  <nav class="navbar fixed-bottom navbar-light bg-light">
+    <div class="container-fluid justify-content-around">
+      <button class="btn btn-outline-primary p-2">Favorites</button>
+      <a href="index.html"><button class="btn btn-outline-primary p-2">Map</button></a>
+      <a href="user.html"><button class="btn btn-outline-primary p-2">Profile</button></a>
+    </div>
+  </nav>
+
+  <!-- Booking Modal -->
+  <div class="modal fade" id="bookingModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Book Your Ticket</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+          <input type="hidden" id="selectedBusId">
+
+          <form id="bookingForm">
+            <div class="mb-3">
+              <label for="passengerName" class="form-label">Name</label>
+              <input type="text" class="form-control" id="passengerName" required>
+            </div>
+            <div class="mb-3">
+              <label for="passengerMobile" class="form-label">Mobile Number</label>
+              <input type="tel" class="form-control" id="passengerMobile" placeholder="10-digit mobile number" required pattern="[0-9]{10}">
+            </div>
+            <p>Total Price: ₹<span id="totalPrice">0</span></p>
+            <button type="submit" class="btn btn-success">Confirm Booking</button>
+          </form>
+
+          <div id="qrCodeContainer" class="mt-3"></div>
+          <button id="downloadQRBtn" class="btn btn-primary mt-2" style="display:none;">Download QR</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payment Modal -->
+  <div class="modal fade" id="paymentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Complete Payment</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p>Total Amount: ₹<span id="paymentAmount">0</span></p>
+
+          <ul class="nav nav-tabs" id="paymentTabs" role="tablist">
+            <li class="nav-item"><button class="nav-link active" id="card-tab" data-bs-toggle="tab" data-bs-target="#card" type="button">Card</button></li>
+            <li class="nav-item"><button class="nav-link" id="upi-tab" data-bs-toggle="tab" data-bs-target="#upi" type="button">UPI</button></li>
+            <li class="nav-item"><button class="nav-link" id="netbanking-tab" data-bs-toggle="tab" data-bs-target="#netbanking" type="button">Net Banking</button></li>
+          </ul>
+
+          <div class="tab-content mt-3">
+            <div class="tab-pane fade show active" id="card">
+              <input type="text" class="form-control mb-2" placeholder="Card Number">
+              <input type="text" class="form-control mb-2" placeholder="MM/YY">
+              <input type="password" class="form-control mb-2" placeholder="CVV">
+            </div>
+            <div class="tab-pane fade" id="upi">
+              <input type="text" class="form-control mb-2" placeholder="example@upi">
+            </div>
+            <div class="tab-pane fade" id="netbanking">
+              <select class="form-select mb-2">
+                <option>SBI</option>
+                <option>HDFC Bank</option>
+                <option>ICICI Bank</option>
+                <option>Axis Bank</option>
+                <option>Punjab National Bank</option>
+              </select>
+            </div>
+          </div>
+
+          <button class="btn btn-primary w-100 mt-3" id="payNowBtn">Pay Now</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // ---------------- Bus Data ----------------
+    const buses = [
+      { id:1, code:"101", name:"Bus 101", from:"Amritsar", to:"Jalandhar", pricePerSeat:120, stops:["Amritsar","Beas","Jalandhar"], duration:"2h 15m", onTime:true },
+      { id:2, code:"102", name:"Bus 102", from:"Amritsar", to:"Ludhiana", pricePerSeat:140, stops:["Amritsar","Beas","Ludhiana"], duration:"3h 10m", onTime:false },
+      { id:3, code:"103", name:"Bus 103", from:"Chandigarh", to:"Ludhiana", pricePerSeat:150, stops:["Chandigarh","Kharar","Ludhiana"], duration:"1h 50m", onTime:true },
+      { id:4, code:"104", name:"Bus 104", from:"Jammu", to:"Pathankot", pricePerSeat:200, stops:["Jammu","Kathua","Pathankot"], duration:"4h 05m", onTime:true }
+    ];
+
+    // ------------------ Render Bus List ------------------
+    function renderBusList(list){
+      const container = document.getElementById("busList");
+      container.innerHTML = "";
+      list.forEach(bus=>{
+        const div = document.createElement("div");
+        div.className = "col-12 mb-3";
+        div.innerHTML = `
+          <div class="card border-0 shadow-sm rounded-3" style="background: linear-gradient(135deg, #f8f9ff 0%, #e8f4fd 100%);">
+            <div class="card-body p-3">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <div>
+                  <h6 class="card-title mb-1 fw-bold text-primary">${bus.code} ${bus.name}</h6>
+                  <small class="text-muted">@ ${bus.from} Station</small>
+                </div>
+                <div class="text-end">
+                  <span class="badge ${bus.onTime ? 'bg-success' : 'bg-warning'} rounded-pill px-2 py-1">${bus.onTime ? 'On Time' : 'Delayed'}</span>
+                </div>
+              </div>
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <small class="text-muted">2 min</small>
+                <div class="progress" style="width: 60%; height: 6px;">
+                  <div class="progress-bar bg-info" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+                <small class="text-muted">25%</small>
+              </div>
+              <button class="btn btn-primary btn-sm rounded-pill px-3" onclick="openBooking(${bus.id})">E-Ticket</button>
+              <hr class="my-2">
+              <h6 class="mb-2 text-primary">Next Stops:</h6>
+              <div class="row">
+                ${bus.stops.slice(1, 4).map((stop, index) => `
+                  <div class="col-12 mb-1">
+                    <div class="d-flex justify-content-between align-items-center">
+                      <small class="text-muted">${stop}</small>
+                      <small class="text-primary">${(index + 1) * 3} min</small>
+                    </div>
+                    <div class="progress mb-0" style="height: 3px;">
+                      <div class="progress-bar bg-secondary" style="width: ${(index + 1) * 25}%;"></div>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+              <small class="text-end d-block mt-1 text-muted">Duration: ${bus.duration} | ₹${bus.pricePerSeat}</small>
+            </div>
+          </div>`;
+        container.appendChild(div);
+      });
+    }
+
+    // ------------------ Booking ------------------
+    function openBooking(busId){
+      document.getElementById("selectedBusId").value = busId;
+      const bus = buses.find(b => b.id===busId);
+      document.getElementById("totalPrice").innerText = bus.pricePerSeat;
+      new bootstrap.Modal(document.getElementById("bookingModal")).show();
+    }
+
+    document.getElementById("bookingForm").addEventListener("submit", function(e){
+      e.preventDefault();
+      const name = document.getElementById("passengerName").value.trim();
+      const mobile = document.getElementById("passengerMobile").value.trim();
+      const busId = parseInt(document.getElementById("selectedBusId").value);
+      const bus = buses.find(b => b.id === busId);
+      const total = bus.pricePerSeat;
+
+      if(name === "" || mobile === "" || !/^\d{10}$/.test(mobile)){
+        alert("Please enter a valid Name and 10-digit Mobile Number.");
+        return;
+      }
+
+      window.currentBooking = { bus, name, mobile, seats:"N/A", total };
+      document.getElementById("paymentAmount").innerText = total;
+      new bootstrap.Modal(document.getElementById("paymentModal")).show();
+    });
+
+    // ------------------ Payment ------------------
+    document.getElementById("payNowBtn").addEventListener("click", function(){
+      const booking = window.currentBooking;
+      if(!booking) return;
+
+      const activeTab = document.querySelector("#paymentTabs .nav-link.active").id;
+      let method = "Card";
+      if(activeTab==="upi-tab") method="UPI";
+      if(activeTab==="netbanking-tab") method="Net Banking";
+
+      alert(`Payment Successful via ${method}! 🎉\nBus: ${booking.bus.name}\nTotal Paid: ₹${booking.total}`);
+
+      const qrDiv = document.getElementById("qrCodeContainer");
+      qrDiv.innerHTML = "";
+      new QRCode(qrDiv, `Bus:${booking.bus.code},Name:${booking.name},Mobile:${booking.mobile},Total:₹${booking.total},Method:${method}`);
+
+      const downloadBtn = document.getElementById("downloadQRBtn");
+      downloadBtn.style.display = "block";
+      downloadBtn.onclick = function(){
+        const img = qrDiv.querySelector("img") || qrDiv.querySelector("canvas");
+        let src;
+        if(img.tagName==="IMG") src = img.src;
+        else if(img.tagName==="CANVAS") src = img.toDataURL("image/png");
+        const link = document.createElement("a");
+        link.href = src;
+        link.download = `BusTicket_${booking.bus.code}_${booking.name}.png`;
+        link.click();
+      };
+
+      document.getElementById("bookingForm").reset();
+      bootstrap.Modal.getInstance(document.getElementById("paymentModal")).hide();
+      bootstrap.Modal.getInstance(document.getElementById("bookingModal")).show();
+    });
+
+    // ------------------ Initialize ------------------
+    renderBusList(buses);
+
+    // Handle URL parameter for direct booking
+    const urlParams = new URLSearchParams(window.location.search);
+    const busIdFromUrl = urlParams.get('busId');
+    if (busIdFromUrl) {
+      const busId = parseInt(busIdFromUrl);
+      setTimeout(() => openBooking(busId), 500); // Small delay to ensure DOM is ready
+    }
+  </script>
+</body>
+</html>

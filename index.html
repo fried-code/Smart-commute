@@ -88,33 +88,85 @@
 
     // ---------------- Sample Bus Data ----------------
     const buses = [
-      { id:1, name:"Bus 101", coords:[31.633,74.8723], route:[[31.633,74.8723],[31.56,75.12],[31.326,75.5762]] },
-      { id:2, name:"Bus 102", coords:[30.7333,76.7794], route:[[30.7333,76.7794],[30.76,76.72],[30.901,75.857]] }
+      { id:1, code:"101", name:"Bus 101", from:"Amritsar", to:"Jalandhar", pricePerSeat:120, stops:["Amritsar","Beas","Jalandhar"], duration:"2h 15m", onTime:true },
+      { id:2, code:"102", name:"Bus 102", from:"Amritsar", to:"Ludhiana", pricePerSeat:140, stops:["Amritsar","Beas","Ludhiana"], duration:"3h 10m", onTime:false },
+      { id:3, code:"103", name:"Bus 103", from:"Chandigarh", to:"Ludhiana", pricePerSeat:150, stops:["Chandigarh","Kharar","Ludhiana"], duration:"1h 50m", onTime:true },
+      { id:4, code:"104", name:"Bus 104", from:"Jammu", to:"Pathankot", pricePerSeat:200, stops:["Jammu","Kathua","Pathankot"], duration:"4h 05m", onTime:true },
+      { id:5, code:"105", name:"Bus 105", from:"Pathankot", to:"Jammu", pricePerSeat:190, stops:["Pathankot","Kathua","Jammu"], duration:"3h 45m", onTime:true },
+      { id:6, code:"106", name:"Bus 106", from:"Ludhiana", to:"Chandigarh", pricePerSeat:130, stops:["Ludhiana","Kharar","Chandigarh"], duration:"1h 30m", onTime:false },
+      { id:7, code:"107", name:"Bus 107", from:"Jalandhar", to:"Amritsar", pricePerSeat:125, stops:["Jalandhar","Beas","Amritsar"], duration:"2h 20m", onTime:true },
+      { id:8, code:"108", name:"Bus 108", from:"Chandigarh", to:"Amritsar", pricePerSeat:160, stops:["Chandigarh","Ludhiana","Jalandhar","Amritsar"], duration:"4h 00m", onTime:true },
+      { id:9, code:"109", name:"Bus 109", from:"Jammu", to:"Amritsar", pricePerSeat:250, stops:["Jammu","Pathankot","Amritsar"], duration:"6h 30m", onTime:false },
+      { id:10, code:"110", name:"Bus 110", from:"Ludhiana", to:"Pathankot", pricePerSeat:220, stops:["Ludhiana","Jalandhar","Amritsar","Pathankot"], duration:"5h 15m", onTime:true },
+      { id:11, code:"111", name:"Bus 111", from:"Amritsar", to:"Chandigarh", pricePerSeat:155, stops:["Amritsar","Beas","Jalandhar","Chandigarh"], duration:"3h 45m", onTime:true },
+      { id:12, code:"112", name:"Bus 112", from:"Pathankot", to:"Chandigarh", pricePerSeat:240, stops:["Pathankot","Jammu","Amritsar","Chandigarh"], duration:"7h 00m", onTime:false },
+      { id:13, code:"113", name:"Bus 113", from:"Kharar", to:"Kathua", pricePerSeat:180, stops:["Kharar","Ludhiana","Jalandhar","Kathua"], duration:"4h 50m", onTime:true },
+      { id:14, code:"114", name:"Bus 114", from:"Beas", to:"Jammu", pricePerSeat:210, stops:["Beas","Amritsar","Pathankot","Jammu"], duration:"5h 40m", onTime:true }
     ];
+
+    // Compute paths from stops
+    buses.forEach(bus => {
+      bus.path = bus.stops.map(stop => getCoords(stop));
+      bus.polyline = bus.path; // initial straight line
+      bus.currentIndex = 0;
+      bus.progress = 0; // 0 to 1 between current and next stop
+      bus.coords = bus.path[0]; // Start at first stop
+    });
 
     const busMarkers = {};
 
-    // ---------------- Add Buses ----------------
+    // Add markers immediately
     buses.forEach(bus=>{
       const marker = L.marker(bus.coords, {icon:busIcon}).addTo(map)
         .bindPopup(`<b>${bus.name}</b><br>Status: On Route<br><button class="btn btn-sm btn-success mt-2" onclick="bookBus(${bus.id})">Book</button>`);
       busMarkers[bus.id] = marker;
     });
 
-    // ---------------- Live Simulation ----------------
-    function moveBus(bus){
-      if(bus.route.length > 1){
-        const next = bus.route.shift();
-        bus.coords = next;
-        busMarkers[bus.id].setLatLng(next);
-        busMarkers[bus.id].getPopup().setContent(`<b>${bus.name}</b><br>Status: On Route<br>Lat: ${next[0].toFixed(3)}, Lng: ${next[1].toFixed(3)}<br><button class="btn btn-sm btn-success mt-2" onclick="bookBus(${bus.id})">Book</button>`);
-        bus.route.push(next); // loop back
-      }
-    }
-
+    // Start animation immediately with straight lines
     setInterval(()=>{
       buses.forEach(moveBus);
-    }, 5000);
+    }, 300); // Update every 300ms for very slow movement
+
+    // Function to compute road routes
+    function computeRoutes() {
+      const promises = buses.map(bus => {
+        return new Promise((resolve) => {
+          const waypoints = bus.stops.map(stop => L.latLng(getCoords(stop)));
+          L.Routing.OSRMv1.route(waypoints, (err, routes) => {
+            if (err || !routes || routes.length === 0) {
+              // keep straight lines
+              resolve();
+            } else {
+              bus.polyline = routes[0].coordinates.map(coord => [coord.lat, coord.lng]);
+              resolve();
+            }
+          });
+        });
+      });
+      Promise.all(promises).then(() => {
+        // Routes computed, buses will now follow roads
+      });
+    }
+
+    // ---------------- Live Simulation ----------------
+    function moveBus(bus){
+      bus.progress += 0.005; // Increment progress (slower)
+      if (bus.progress >= 1) {
+        bus.progress = 0;
+        bus.currentIndex = (bus.currentIndex + 1) % bus.polyline.length;
+      }
+      const current = bus.polyline[bus.currentIndex];
+      const nextIndex = (bus.currentIndex + 1) % bus.polyline.length;
+      const next = bus.polyline[nextIndex];
+      const lat = current[0] + (next[0] - current[0]) * bus.progress;
+      const lng = current[1] + (next[1] - current[1]) * bus.progress;
+      bus.coords = [lat, lng];
+      busMarkers[bus.id].setLatLng([lat, lng]);
+      busMarkers[bus.id].getPopup().setContent(`<b>${bus.name}</b><br>Status: On Route<br>Lat: ${lat.toFixed(3)}, Lng: ${lng.toFixed(3)}<br><button class="btn btn-sm btn-success mt-2" onclick="bookBus(${bus.id})">Book</button>`);
+    }
+
+    // Start computing routes
+    computeRoutes();
 
     // ---------------- Book Bus Function ----------------
     function bookBus(busId) {
@@ -172,4 +224,3 @@
   </script>
 </body>
 </html>
-

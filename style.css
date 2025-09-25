@@ -1,133 +1,37 @@
-/* -------- Color Palette -------- */
-:root {
-  --dark-purple: #160F29;
-  --teal: #246A73;
-  --sea-green: #368F8B;
-  --light-beige: #F3DFC1;
-  --peach: #DDBEA8;
-  --white: #ffffff;
+body { font-family:'Segoe UI',sans-serif; background-color:#F38375; }
+
+/* Map */
+#map { border-radius:10px; box-shadow:0 4px 8px rgba(0,0,0,0.1); }
+
+/* Bus List */
+#busList .col-12 { background-color:#F38375; color:#fff; transition:0.2s; }
+#busList .col-12:hover { background-color:#F57B6D; transform:translateY(-2px); }
+
+/* Modals */
+.modal-content { border-radius:12px; overflow:hidden; }
+.modal-header { background-color:#368F8B; color:#fff; }
+.modal-body { background-color:#F7A399; }
+
+/* Payment Tabs */
+#paymentTabs .nav-link { color:#EF6351; font-weight:500; }
+#paymentTabs .nav-link.active { background-color:#EF6351; color:#fff !important; }
+
+/* QR */
+#qrCodeContainer img,#qrCodeContainer canvas {
+  width:200px; height:200px; border:2px solid #EF6351; border-radius:12px;
 }
 
-/* -------- Body & Typography -------- */
-body {
-  background-color: var(--light-beige);
-  color: var(--dark-purple);
-  font-family: 'Arial', sans-serif;
-  margin: 0;
-  padding: 0;
+/* Buttons */
+.btn-success,.btn-primary { background-color:#EF6351; border-color:#EF6351; }
+.btn-success:hover,.btn-primary:hover { background-color:#d35443; border-color:#d35443; }
+
+/* Responsive */
+@media(max-width:768px){
+  #busList .col-12 { font-size:0.9rem; }
+  #qrCodeContainer img,#qrCodeContainer canvas { width:150px; height:150px; }
 }
 
-/* -------- Navbar -------- */
-.navbar {
-  background-color: var(--teal) !important;
-}
-.navbar .navbar-brand {
-  font-weight: bold;
-  font-size: 1.5rem;
-  color: var(--white);
-}
-.navbar img {
-  border-radius: 50%;
-  border: 2px solid var(--white);
-}
-
-/* -------- Buttons -------- */
-.btn-search {
-  background-color: var(--sea-green);
-  color: var(--white);
-}
-.btn-search:hover {
-  background-color: var(--teal);
-}
-
-button.btn-teal {
-  background-color: var(--teal);
-  color: var(--white);
-}
-button.btn-teal:hover {
-  background-color: var(--sea-green);
-}
-
-button.btn-success {
-  background-color: var(--sea-green);
-  color: var(--white);
-}
-button.btn-success:hover {
-  background-color: var(--teal);
-}
-
-/* -------- Map -------- */
-#map {
-  height: 500px;
-  border-radius: 10px;
-  border: 2px solid var(--sea-green);
-  margin-bottom: 20px;
-}
-
-/* -------- Trip Summary -------- */
-#tripSummary {
-  background-color: var(--peach);
-  color: var(--dark-purple);
-  border-radius: 8px;
-  padding: 15px;
-  min-height: 120px;
-  margin-bottom: 20px;
-}
-
-/* -------- Bus List -------- */
-#busList .col-12 {
-  background-color: var(--white);
-  padding: 12px;
-  border-radius: 8px;
-  transition: 0.3s;
-}
-#busList .col-12:hover {
-  background-color: var(--peach);
-}
-
-
-/* -------- Booking Modal -------- */
-.modal-content {
-  background-color: var(--light-beige);
-  color: var(--dark-purple);
-  border-radius: 10px;
-}
-
-.modal-header {
-  background-color: var(--teal);
-  color: var(--white);
-  border-bottom: none;
-}
-
-.modal-footer {
-  background-color: var(--sea-green);
-  color: var(--white);
-  border-top: none;
-}
-
-.modal-body p {
-  margin-top: 10px;
-}
-
-#qrCodeContainer {
-  margin-top: 15px;
-  display: flex;
-  justify-content: center;
-}
-
-/* -------- Inputs -------- */
-input, select {
-  border-radius: 5px;
-  border: 1px solid var(--sea-green);
-  padding: 8px;
-}
-
-input:focus, select:focus {
-  outline: 2px solid var(--teal);
-  box-shadow: none;
-}
-
-/* useer */
+/* user */
 :root {
     --primary-color: #3498db;
     --secondary-color: #2980b9;
@@ -306,4 +210,5 @@ body {
     .driver-info, .map-placeholder {
         flex: 1;
     }
+
 }

@@ -22,8 +22,8 @@
   <!-- Bottom Navigation -->
   <nav class="navbar fixed-bottom navbar-light bg-light">
     <div class="container-fluid justify-content-around">
-      <a href="index.html" class="btn btn-outline-primary p-2">Home</a>
-      <a href="home.html" class="btn btn-outline-primary p-2">Map</a>
+      <a href="home.html" class="btn btn-outline-primary p-2">Home</a>
+      <a href="index.html" class="btn btn-outline-primary p-2">Map</a>
       <a href="buses.html" class="btn btn-outline-primary p-2">Buses</a>
       <a href="user.html" class="btn btn-outline-primary p-2">Profile</a>
     </div>
@@ -50,6 +50,9 @@
 
     <div id="map" style="height:500px; border-radius:10px;"></div>
   </div>
+
+  <!-- Starred Buses -->
+  <div id="starredBuses" class="container mt-3"></div>
 
   <!-- Scripts -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -116,37 +119,61 @@
 
     const busMarkers = {};
 
-    // Add markers immediately
-    buses.forEach(bus=>{
-      const marker = L.marker(bus.coords, {icon:busIcon}).addTo(map)
-        .bindPopup(`<b>${bus.name}</b><br>Status: On Route<br><button class="btn btn-sm btn-success mt-2" onclick="bookBus(${bus.id})">Book</button>`);
-      busMarkers[bus.id] = marker;
-    });
+    let starredBuses = JSON.parse(localStorage.getItem('starredBuses')) || [];
 
-    // Start animation immediately with straight lines
-    setInterval(()=>{
-      buses.forEach(moveBus);
-    }, 300); // Update every 300ms for very slow movement
+    // ---------------- Book Bus Function ----------------
+    function bookBus(busId) {
+      window.location.href = `buses.html?busId=${busId}`;
+    }
 
-    // Function to compute road routes
-    function computeRoutes() {
-      const promises = buses.map(bus => {
-        return new Promise((resolve) => {
-          const waypoints = bus.stops.map(stop => L.latLng(getCoords(stop)));
-          L.Routing.OSRMv1.route(waypoints, (err, routes) => {
-            if (err || !routes || routes.length === 0) {
-              // keep straight lines
-              resolve();
-            } else {
-              bus.polyline = routes[0].coordinates.map(coord => [coord.lat, coord.lng]);
-              resolve();
-            }
-          });
-        });
+    function bookRouteBus(from, to) {
+      window.location.href = `buses.html?from=${from}&to=${to}`;
+    }
+
+    function starBus(busId) {
+      if (starredBuses.includes(busId)) {
+        starredBuses = starredBuses.filter(id => id !== busId);
+      } else {
+        starredBuses.push(busId);
+      }
+      localStorage.setItem('starredBuses', JSON.stringify(starredBuses));
+      displayStarredBuses();
+      const bus = buses.find(b => b.id === busId);
+      if (bus) {
+        busMarkers[busId].getPopup().setContent(getPopupContent(bus));
+      }
+    }
+
+    function displayStarredBuses() {
+      const container = document.getElementById('starredBuses');
+      container.innerHTML = '<h3>Starred Buses</h3>';
+      if (starredBuses.length === 0) {
+        container.innerHTML += '<p>No starred buses yet.</p>';
+        return;
+      }
+      starredBuses.forEach(id => {
+        const bus = buses.find(b => b.id === id);
+        if (bus) {
+          container.innerHTML += `
+            <div class="card mb-2">
+              <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                  <h5 class="mb-1">${bus.name}</h5>
+                  <p class="mb-1">From ${bus.from} to ${bus.to}</p>
+                  <small>Price: ₹${bus.pricePerSeat} | Duration: ${bus.duration}</small>
+                </div>
+                <button class="btn btn-primary" onclick="bookBus(${bus.id})">Book</button>
+              </div>
+            </div>
+          `;
+        }
       });
-      Promise.all(promises).then(() => {
-        // Routes computed, buses will now follow roads
-      });
+    }
+
+    function getPopupContent(bus) {
+      const starred = starredBuses.includes(bus.id);
+      const starText = starred ? 'Unstar' : 'Star';
+      return `<b>${bus.name}</b><br>Status: On Route<br>Lat: ${bus.coords[0].toFixed(3)}, Lng: ${bus.coords[1].toFixed(3)}<br><button class="btn btn-sm btn-success mt-2" onclick="bookBus(${bus.id})">Book</button><button class="btn btn-sm btn-warning mt-2 ms-2" onclick="starBus(${bus.id})">${starText}</button>`;
     }
 
     // ---------------- Live Simulation ----------------
@@ -163,20 +190,45 @@
       const lng = current[1] + (next[1] - current[1]) * bus.progress;
       bus.coords = [lat, lng];
       busMarkers[bus.id].setLatLng([lat, lng]);
-      busMarkers[bus.id].getPopup().setContent(`<b>${bus.name}</b><br>Status: On Route<br>Lat: ${lat.toFixed(3)}, Lng: ${lng.toFixed(3)}<br><button class="btn btn-sm btn-success mt-2" onclick="bookBus(${bus.id})">Book</button>`);
+      busMarkers[bus.id].getPopup().setContent(getPopupContent(bus));
     }
+
+    // Function to compute road routes
+    function computeRoutes() {
+      const router = L.Routing.osrmv1();
+      const promises = buses.map(bus => {
+        return new Promise((resolve) => {
+          const waypoints = bus.stops.map(stop => L.latLng(getCoords(stop)));
+          router.route(waypoints, (err, routes) => {
+            if (err || !routes || routes.length === 0) {
+              // keep straight lines
+              resolve();
+            } else {
+              bus.polyline = routes[0].coordinates.map(coord => [coord.lat, coord.lng]);
+              resolve();
+            }
+          });
+        });
+      });
+      Promise.all(promises).then(() => {
+        // Routes computed, buses will now follow roads
+      });
+    }
+
+    // Add markers immediately
+    buses.forEach(bus=>{
+      const marker = L.marker(bus.coords, {icon:busIcon}).addTo(map)
+        .bindPopup(getPopupContent(bus));
+      busMarkers[bus.id] = marker;
+    });
+
+    // Start animation immediately with straight lines
+    setInterval(()=>{
+      buses.forEach(moveBus);
+    }, 300); // Update every 300ms for very slow movement
 
     // Start computing routes
     computeRoutes();
-
-    // ---------------- Book Bus Function ----------------
-    function bookBus(busId) {
-      window.location.href = `buses.html?busId=${busId}`;
-    }
-
-    function bookRouteBus(from, to) {
-      window.location.href = `buses.html?from=${from}&to=${to}`;
-    }
 
     // ---------------- Route Search ----------------
     // Populate dropdowns
@@ -230,7 +282,9 @@
       const routeBusMarker = L.marker(fromCoords, {icon: busIcon}).addTo(routeLayerGroup)
         .bindPopup(`<b>New Bus: ${from} to ${to}</b><br>Status: Ready to Book<br><button class="btn btn-sm btn-success mt-2" onclick="bookRouteBus('${from}', '${to}')">Book</button>`);
     });
+
+    // Display starred buses on load
+    displayStarredBuses();
   </script>
 </body>
 </html>
-

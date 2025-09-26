@@ -1,33 +1,129 @@
-body { 
-  font-family:'Segoe UI',sans-serif; 
-  background-color:#F38375; 
+body {
+  font-family: 'Inter', sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
   padding-bottom: 70px; /* Account for fixed bottom navigation */
+  color: #333;
+}
+
+/* Occupancy Visualization */
+.occupancy-square {
+  width: 20px;
+  height: 20px;
+  margin: 0 auto;
+  border-radius: 4px;
+  border: 1px solid #333;
+}
+
+.occupancy-square.crowded {
+  background: #ff4444;
+}
+
+.occupancy-square.moderate {
+  background: #ffaa00;
+}
+
+.occupancy-square.low {
+  background: #44ff44;
+}
+
+.occupancy-square.empty {
+  background: #4444ff;
+}
+
+.occupancy-marker {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+#checkBusBtn {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  border: none;
+  border-radius: 25px;
+  padding: 10px 20px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+#checkBusBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4);
+}
+
+#occupancyLegend {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* Map */
 #map { border-radius:10px; box-shadow:0 4px 8px rgba(0,0,0,0.1); }
 
 /* Bus List */
-#busList .col-12 { background-color:#F38375; color:#fff; transition:0.2s; }
-#busList .col-12:hover { background-color:#F57B6D; transform:translateY(-2px); }
+#busList .col-12 {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  color: #333;
+  border-radius: 15px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+#busList .col-12:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+}
 
 /* Modals */
-.modal-content { border-radius:12px; overflow:hidden; }
-.modal-header { background-color:#368F8B; color:#fff; }
-.modal-body { background-color:#F7A399; }
+.modal-content {
+  border-radius: 20px;
+  overflow: hidden;
+  border: none;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+.modal-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  border-bottom: none;
+}
+.modal-body {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+}
 
 /* Payment Tabs */
-#paymentTabs .nav-link { color:#EF6351; font-weight:500; }
-#paymentTabs .nav-link.active { background-color:#EF6351; color:#fff !important; }
+#paymentTabs .nav-link {
+  color: #667eea;
+  font-weight: 500;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+#paymentTabs .nav-link.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff !important;
+}
 
 /* QR */
-#qrCodeContainer img,#qrCodeContainer canvas {
-  width:200px; height:200px; border:2px solid #EF6351; border-radius:12px;
+#qrCodeContainer img, #qrCodeContainer canvas {
+  width: 200px;
+  height: 200px;
+  border: 3px solid #667eea;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
 }
 
 /* Buttons */
-.btn-success,.btn-primary { background-color:#EF6351; border-color:#EF6351; }
-.btn-success:hover,.btn-primary:hover { background-color:#d35443; border-color:#d35443; }
+.btn-success, .btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 25px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.btn-success:hover, .btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
 
 /* Responsive */
 @media(max-width:768px){

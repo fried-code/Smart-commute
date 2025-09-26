@@ -3,21 +3,83 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BusTrack+ Live Tracker</title>
+  <title>COmmute Punjab</title>
 
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
-  <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
-  <!-- Leaflet Routing Machine CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
 
   <!-- Custom CSS -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-dark bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="home.html">Commute Punjab</a>
+      <span class="navbar-text">Home</span>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <div class="container-fluid mt-3 mb-5">
+    <div class="row justify-content-center">
+      <div class="col-md-8 text-center">
+        <img src="home.png" alt="BusTrack+ Home" class="img-fluid rounded mb-4" style="max-height: 300px;">
+        <h1 class="display-4 text-primary">Welcome to Commute Punjab</h1>
+        <p class="lead">Your ultimate live bus tracking companion. Track buses in real-time, book tickets effortlessly, and manage your rides all in one place.</p>
+        <a href="index.html" class="btn btn-primary btn-lg me-2">Start Tracking</a>
+        <a href="buses.html" class="btn btn-outline-primary btn-lg">View All Buses</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Features Section -->
+  <div class="container mb-5">
+    <h2 class="text-center mb-4">Why Choose Commute Punjab</h2>
+    <div class="row">
+      <div class="col-md-3 mb-3">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body text-center">
+            <img src="bus_382329.png" alt="Live Tracking" class="img-fluid mb-3" style="max-height: 100px;">
+            <h5 class="card-title">Live Bus Tracking</h5>
+            <p class="card-text">Monitor bus locations in real-time with our interactive map. Know exactly when your bus arrives.</p>
+            <a href="index.html" class="btn btn-primary">Track Now</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body text-center">
+            <img src="appointment.png" alt="Book Tickets" class="img-fluid mb-3" style="max-height: 100px;">
+            <h5 class="card-title">Easy Booking</h5>
+            <p class="card-text">Book your tickets instantly with our secure payment system. Get QR codes for easy boarding.</p>
+            <a href="buses.html" class="btn btn-primary">Book Now</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body text-center">
+            <img src="profile-user.png" alt="Profile" class="img-fluid mb-3" style="max-height: 100px;">
+            <h5 class="card-title">Manage Your Profile</h5>
+            <p class="card-text">View your trip history, manage favorites, and keep track of all your rides in one place.</p>
+            <a href="user.html" class="btn btn-primary">View Profile</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="card h-100 shadow-sm modern-card">
+          <div class="card-body text-center">
+            <img src="appointment.png" alt="Ticket Prices" class="img-fluid mb-3" style="max-height: 100px;">
+            <h5 class="card-title">Ticket Prices</h5>
+            <p class="card-text">View current ticket prices for all routes.</p>
+            <a href="ticket-prices.html" class="btn btn-primary">View Prices</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Bottom Navigation -->
   <nav class="navbar fixed-bottom navbar-light bg-light">
@@ -29,207 +91,17 @@
     </div>
   </nav>
 
-  <!-- Live Tracker -->
-  <div class="container mt-3 mb-5">
-    <h2 class="text-center mb-3">Live Bus Tracker</h2>
+  <!-- Footer -->
+  <footer class="bg-dark text-light text-center py-3 mt-5">
+    <p>&copy; 2025 BusTrack+, Inc. All rights reserved.</p>
+  </footer>
 
-    <!-- Route Search Form -->
-    <div class="row justify-content-center mb-3">
-      <div class="col-md-8">
-        <form id="routeForm" class="d-flex gap-2">
-          <select id="fromLocation" class="form-select" required>
-            <option value="">From</option>
-          </select>
-          <select id="toLocation" class="form-select" required>
-            <option value="">To</option>
-          </select>
-          <button type="submit" class="btn btn-primary">Show Route</button>
-        </form>
-      </div>
-    </div>
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
 
-    <div id="map" style="height:500px; border-radius:10px;"></div>
-  </div>
-
-  <!-- Scripts -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
-  <script>
-    // ---------------- Map ----------------
-    const map = L.map("map").setView([31.633,74.8723], 7);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "© OpenStreetMap contributors"
-    }).addTo(map);
-
-    const routeLayerGroup = L.layerGroup().addTo(map);
-    let routingControl = null;
-
-    const busIcon = L.icon({
-      iconUrl:"https://cdn-icons-png.flaticon.com/512/61/61205.png",
-      iconSize:[32,32], iconAnchor:[16,16]
-    });
-
-    // ---------------- Stops and Coords ----------------
-    const stops = ["Amritsar", "Beas", "Jalandhar", "Chandigarh", "Kharar", "Ludhiana", "Jammu", "Kathua", "Pathankot"];
-
-    function getCoords(stop) {
-      const coordMap = {
-        "Amritsar": [31.633, 74.8723],
-        "Beas": [31.56, 75.12],
-        "Jalandhar": [31.326, 75.5762],
-        "Chandigarh": [30.7333, 76.7794],
-        "Kharar": [30.76, 76.72],
-        "Ludhiana": [30.901, 75.857],
-        "Jammu": [32.7266, 74.857],
-        "Kathua": [32.37, 75.52],
-        "Pathankot": [32.27, 75.65]
-      };
-      return coordMap[stop] || [31.633, 74.8723];
-    }
-
-    // ---------------- Sample Bus Data ----------------
-    const buses = [
-      { id:1, code:"101", name:"Bus 101", from:"Amritsar", to:"Jalandhar", pricePerSeat:120, stops:["Amritsar","Beas","Jalandhar"], duration:"2h 15m", onTime:true },
-      { id:2, code:"102", name:"Bus 102", from:"Amritsar", to:"Ludhiana", pricePerSeat:140, stops:["Amritsar","Beas","Ludhiana"], duration:"3h 10m", onTime:false },
-      { id:3, code:"103", name:"Bus 103", from:"Chandigarh", to:"Ludhiana", pricePerSeat:150, stops:["Chandigarh","Kharar","Ludhiana"], duration:"1h 50m", onTime:true },
-      { id:4, code:"104", name:"Bus 104", from:"Jammu", to:"Pathankot", pricePerSeat:200, stops:["Jammu","Kathua","Pathankot"], duration:"4h 05m", onTime:true },
-      { id:5, code:"105", name:"Bus 105", from:"Pathankot", to:"Jammu", pricePerSeat:190, stops:["Pathankot","Kathua","Jammu"], duration:"3h 45m", onTime:true },
-      { id:6, code:"106", name:"Bus 106", from:"Ludhiana", to:"Chandigarh", pricePerSeat:130, stops:["Ludhiana","Kharar","Chandigarh"], duration:"1h 30m", onTime:false },
-      { id:7, code:"107", name:"Bus 107", from:"Jalandhar", to:"Amritsar", pricePerSeat:125, stops:["Jalandhar","Beas","Amritsar"], duration:"2h 20m", onTime:true },
-      { id:8, code:"108", name:"Bus 108", from:"Chandigarh", to:"Amritsar", pricePerSeat:160, stops:["Chandigarh","Ludhiana","Jalandhar","Amritsar"], duration:"4h 00m", onTime:true },
-      { id:9, code:"109", name:"Bus 109", from:"Jammu", to:"Amritsar", pricePerSeat:250, stops:["Jammu","Pathankot","Amritsar"], duration:"6h 30m", onTime:false },
-      { id:10, code:"110", name:"Bus 110", from:"Ludhiana", to:"Pathankot", pricePerSeat:220, stops:["Ludhiana","Jalandhar","Amritsar","Pathankot"], duration:"5h 15m", onTime:true },
-      { id:11, code:"111", name:"Bus 111", from:"Amritsar", to:"Chandigarh", pricePerSeat:155, stops:["Amritsar","Beas","Jalandhar","Chandigarh"], duration:"3h 45m", onTime:true },
-      { id:12, code:"112", name:"Bus 112", from:"Pathankot", to:"Chandigarh", pricePerSeat:240, stops:["Pathankot","Jammu","Amritsar","Chandigarh"], duration:"7h 00m", onTime:false },
-      { id:13, code:"113", name:"Bus 113", from:"Kharar", to:"Kathua", pricePerSeat:180, stops:["Kharar","Ludhiana","Jalandhar","Kathua"], duration:"4h 50m", onTime:true },
-      { id:14, code:"114", name:"Bus 114", from:"Beas", to:"Jammu", pricePerSeat:210, stops:["Beas","Amritsar","Pathankot","Jammu"], duration:"5h 40m", onTime:true }
-    ];
-
-    // Compute paths from stops
-    buses.forEach(bus => {
-      bus.path = bus.stops.map(stop => getCoords(stop));
-      bus.polyline = bus.path; // initial straight line
-      bus.currentIndex = 0;
-      bus.progress = 0; // 0 to 1 between current and next stop
-      bus.coords = bus.path[0]; // Start at first stop
-    });
-
-    const busMarkers = {};
-
-    // Add markers immediately
-    buses.forEach(bus=>{
-      const marker = L.marker(bus.coords, {icon:busIcon}).addTo(map)
-        .bindPopup(`<b>${bus.name}</b><br>Status: On Route<br><button class="btn btn-sm btn-success mt-2" onclick="bookBus(${bus.id})">Book</button>`);
-      busMarkers[bus.id] = marker;
-    });
-
-    // Start animation immediately with straight lines
-    setInterval(()=>{
-      buses.forEach(moveBus);
-    }, 300); // Update every 300ms for very slow movement
-
-    // Function to compute road routes
-    function computeRoutes() {
-      const promises = buses.map(bus => {
-        return new Promise((resolve) => {
-          const waypoints = bus.stops.map(stop => L.latLng(getCoords(stop)));
-          L.Routing.OSRMv1.route(waypoints, (err, routes) => {
-            if (err || !routes || routes.length === 0) {
-              // keep straight lines
-              resolve();
-            } else {
-              bus.polyline = routes[0].coordinates.map(coord => [coord.lat, coord.lng]);
-              resolve();
-            }
-          });
-        });
-      });
-      Promise.all(promises).then(() => {
-        // Routes computed, buses will now follow roads
-      });
-    }
-
-    // ---------------- Live Simulation ----------------
-    function moveBus(bus){
-      bus.progress += 0.005; // Increment progress (slower)
-      if (bus.progress >= 1) {
-        bus.progress = 0;
-        bus.currentIndex = (bus.currentIndex + 1) % bus.polyline.length;
-      }
-      const current = bus.polyline[bus.currentIndex];
-      const nextIndex = (bus.currentIndex + 1) % bus.polyline.length;
-      const next = bus.polyline[nextIndex];
-      const lat = current[0] + (next[0] - current[0]) * bus.progress;
-      const lng = current[1] + (next[1] - current[1]) * bus.progress;
-      bus.coords = [lat, lng];
-      busMarkers[bus.id].setLatLng([lat, lng]);
-      busMarkers[bus.id].getPopup().setContent(`<b>${bus.name}</b><br>Status: On Route<br>Lat: ${lat.toFixed(3)}, Lng: ${lng.toFixed(3)}<br><button class="btn btn-sm btn-success mt-2" onclick="bookBus(${bus.id})">Book</button>`);
-    }
-
-    // Start computing routes
-    computeRoutes();
-
-    // ---------------- Book Bus Function ----------------
-    function bookBus(busId) {
-      window.location.href = `buses.html?busId=${busId}`;
-    }
-
-    function bookRouteBus(from, to) {
-      window.location.href = `buses.html?from=${from}&to=${to}`;
-    }
-
-    // ---------------- Route Search ----------------
-    // Populate dropdowns
-    const fromSelect = document.getElementById('fromLocation');
-    const toSelect = document.getElementById('toLocation');
-    stops.forEach(stop => {
-      const option1 = new Option(stop, stop);
-      const option2 = new Option(stop, stop);
-      fromSelect.add(option1);
-      toSelect.add(option2);
-    });
-
-    // Form handler
-    document.getElementById('routeForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const from = fromSelect.value;
-      const to = toSelect.value;
-      if (!from || !to || from === to) {
-        alert('Please select different From and To locations.');
-        return;
-      }
-
-      const fromCoords = getCoords(from);
-      const toCoords = getCoords(to);
-
-      // Clear previous route
-      routeLayerGroup.clearLayers();
-      if (routingControl) {
-        map.removeControl(routingControl);
-      }
-
-      // Add routing control for road-following route
-      routingControl = L.Routing.control({
-        waypoints: [
-          L.latLng(fromCoords[0], fromCoords[1]),
-          L.latLng(toCoords[0], toCoords[1])
-        ],
-        routeWhileDragging: false,
-        addWaypoints: false,
-        createMarker: function() { return null; }, // no default markers
-        lineOptions: {
-          styles: [{ color: '#368F8B', weight: 5 }]
-        }
-      }).addTo(map);
-
-      // Add custom markers for from and to
-      L.marker(fromCoords).addTo(routeLayerGroup).bindPopup(`<b>From: ${from}</b>`).openPopup();
-      L.marker(toCoords).addTo(routeLayerGroup).bindPopup(`<b>To: ${to}</b>`);
-
-      // Add a bookable bus marker at from location
-      const routeBusMarker = L.marker(fromCoords, {icon: busIcon}).addTo(routeLayerGroup)
-        .bindPopup(`<b>New Bus: ${from} to ${to}</b><br>Status: Ready to Book<br><button class="btn btn-sm btn-success mt-2" onclick="bookRouteBus('${from}', '${to}')">Book</button>`);
-    });
   </script>
 </body>
 </html>
+

@@ -19,12 +19,13 @@
 </head>
 <body>
 
-  <!-- Navbar -->
-  <nav class="navbar fixed-bottom">
+  <!-- Bottom Navigation -->
+  <nav class="navbar fixed-bottom navbar-light bg-light">
     <div class="container-fluid justify-content-around">
-      <a class="nav-link active" href="index.html">Home</a>
-      <a class="nav-link" href="buses.html">Buses</a>
-      <a class="nav-link" href="user.html">Profile</a>
+      <a href="home.html" class="btn btn-outline-primary p-2">Home</a>
+      <a href="index.html" class="btn btn-outline-primary p-2">Map</a>
+      <a href="buses.html" class="btn btn-outline-primary p-2">Buses</a>
+      <a href="user.html" class="btn btn-outline-primary p-2">Profile</a>
     </div>
   </nav>
 
@@ -173,6 +174,10 @@
       window.location.href = `buses.html?busId=${busId}`;
     }
 
+    function bookRouteBus(from, to) {
+      window.location.href = `buses.html?from=${from}&to=${to}`;
+    }
+
     // ---------------- Route Search ----------------
     // Populate dropdowns
     const fromSelect = document.getElementById('fromLocation');
@@ -220,6 +225,10 @@
       // Add custom markers for from and to
       L.marker(fromCoords).addTo(routeLayerGroup).bindPopup(`<b>From: ${from}</b>`).openPopup();
       L.marker(toCoords).addTo(routeLayerGroup).bindPopup(`<b>To: ${to}</b>`);
+
+      // Add a bookable bus marker at from location
+      const routeBusMarker = L.marker(fromCoords, {icon: busIcon}).addTo(routeLayerGroup)
+        .bindPopup(`<b>New Bus: ${from} to ${to}</b><br>Status: Ready to Book<br><button class="btn btn-sm btn-success mt-2" onclick="bookRouteBus('${from}', '${to}')">Book</button>`);
     });
   </script>
 </body>

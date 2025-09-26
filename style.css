@@ -31,6 +31,26 @@ body { font-family:'Segoe UI',sans-serif; background-color:#F38375; }
   #qrCodeContainer img,#qrCodeContainer canvas { width:150px; height:150px; }
 }
 
+/* Modern Card Styles */
+.modern-card {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border: none;
+  border-radius: 15px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.modern-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.price {
+  font-size: 1.5em;
+  font-weight: bold;
+  color: #EF6351;
+  margin-top: 10px;
+}
+
 /* user */
 :root {
     --primary-color: #3498db;

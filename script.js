@@ -130,9 +130,3 @@ document.getElementById("payNowBtn").addEventListener("click", function(){
 // ------------------ Initialize ------------------
 renderBusList(buses);
 displayAllBuses();
-
-
-// ------------------ Initialize ------------------
-renderBusList(buses);
-displayAllBuses();
-

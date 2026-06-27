@@ -1,4 +1,8 @@
-🚌 BusTrack+ – Real-Time Bus Tracking & Booking Web App
+JECRC Hackathon Project 
+
+
+SmartComute
+Real-Time Bus Tracking & Booking Web App
 
 BusTrack+ is a web application that allows users to:
 
@@ -83,12 +87,4 @@ Add payment gateway integration.
 
 Enable real seat selection & booking confirmation.
 
-📸 Preview
 
-(Add screenshots or demo GIFs here if you want to showcase the app visually)
-
-👨‍💻 Author
-
-Vedik Bhiwara
-
-Do you want me to also make this README.md as a downloadable file (README.md) so you can directly drop it into your project folder?
